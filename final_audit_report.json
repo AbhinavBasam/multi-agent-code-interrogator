@@ -1,0 +1,25 @@
+{
+  "audit_report": [
+    {
+      "id": "claim_1",
+      "keyword": "Python",
+      "context": "Expertise in Python programming, asynchronous processing, and scripting.",
+      "verdict": "Verified",
+      "reasoning": "The retrieved code chunks explicitly demonstrate the expertise related to the claim."
+    },
+    {
+      "id": "claim_2",
+      "keyword": "CNN",
+      "context": "Experience building Convolutional Neural Networks for image classification.",
+      "verdict": "Verified",
+      "reasoning": "Code chunks from the candidate's repository (e.g., dogclassifier) confirm implementation of Convolutional Neural Networks and image classification."
+    },
+    {
+      "id": "claim_3",
+      "keyword": "FastAPI",
+      "context": "Backend development utilizing FastAPI for performant REST endpoints.",
+      "verdict": "Partial",
+      "reasoning": "The code shows generic API endpoint usage but not explicit FastAPI endpoints."
+    }
+  ]
+}

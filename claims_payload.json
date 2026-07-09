@@ -1,0 +1,19 @@
+{
+  "claims": [
+    {
+      "id": "claim_1",
+      "keyword": "Python",
+      "context": "Expertise in Python programming, asynchronous processing, and scripting."
+    },
+    {
+      "id": "claim_2",
+      "keyword": "CNN",
+      "context": "Experience building Convolutional Neural Networks for image classification."
+    },
+    {
+      "id": "claim_3",
+      "keyword": "FastAPI",
+      "context": "Backend development utilizing FastAPI for performant REST endpoints."
+    }
+  ]
+}
