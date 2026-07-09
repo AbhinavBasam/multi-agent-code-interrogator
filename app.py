@@ -14,21 +14,37 @@ if hasattr(sys.stdout, "reconfigure"):
 # Configure the main page layout
 st.set_page_config(page_title="CodeAudit AI", page_icon="💻", layout="wide")
 
-# Custom Cyber CSS
+# Custom Minimalist CSS
 st.markdown("""
 <style>
     div[data-testid="stMetricValue"] {
-        color: #00E5FF !important;
-        font-weight: bold;
+        color: #ffffff !important;
+        font-weight: 300;
+        font-size: 2.5rem;
+    }
+    div[data-testid="stMetricLabel"] {
+        color: #888888 !important;
+        font-weight: 400;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.8rem;
     }
     div[data-testid="stExpander"] details summary {
-        border: 1px solid rgba(0, 229, 255, 0.3);
-        background-color: #121E3F;
-        border-radius: 4px;
+        border: 1px solid #222222 !important;
+        background-color: #000000;
+        border-radius: 2px;
     }
     div[data-testid="stExpander"] details {
-        border: 1px solid rgba(0, 229, 255, 0.1);
-        border-radius: 4px;
+        border: 1px solid #222222;
+        border-radius: 2px;
+        background-color: #050505;
+    }
+    h1, h2, h3 {
+        font-weight: 300 !important;
+        letter-spacing: -0.5px;
+    }
+    hr {
+        border-bottom-color: #222222 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -168,19 +184,19 @@ if os.path.exists(report_path):
                     reasoning = claim.get("reasoning", "No reasoning provided.")
                     
                     if verdict == "Verified":
-                        status_badge = "[VERIFIED]"
-                        color = "#00E5FF" # neon cyan
+                        status_badge = "VERIFIED"
+                        color = "#ffffff"
                     elif verdict == "Partial":
-                        status_badge = "[PARTIAL]"
-                        color = "#FFD700" # neon gold
+                        status_badge = "PARTIAL"
+                        color = "#888888"
                     else:
-                        status_badge = "[HALLUCINATED]"
-                        color = "#FF3366" # neon pink/red
+                        status_badge = "HALLUCINATED"
+                        color = "#444444"
                         
                     # Build expander for each claim
-                    with st.expander(f"{status_badge}  {keyword}"):
+                    with st.expander(f"{status_badge}  |  {keyword}"):
                         st.markdown(f"**Context:** {context}")
-                        st.markdown(f"**Verdict:** <span style='color:{color}; font-weight:bold;'>{verdict.upper()}</span>", unsafe_allow_html=True)
+                        st.markdown(f"**Verdict:** <span style='color:{color}; font-weight:600;'>{verdict.upper()}</span>", unsafe_allow_html=True)
                         st.markdown(f"**Reasoning:** {reasoning}")
                         
         except json.JSONDecodeError:
