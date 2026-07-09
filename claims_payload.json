@@ -3,17 +3,27 @@
     {
       "id": "claim_1",
       "keyword": "Python",
-      "context": "Expertise in Python programming, asynchronous processing, and scripting."
+      "context": "Candidate claims expertise in Python based on their resume."
     },
     {
       "id": "claim_2",
-      "keyword": "CNN",
-      "context": "Experience building Convolutional Neural Networks for image classification."
+      "keyword": "TensorFlow",
+      "context": "Candidate claims expertise in TensorFlow based on their resume."
     },
     {
       "id": "claim_3",
-      "keyword": "FastAPI",
-      "context": "Backend development utilizing FastAPI for performant REST endpoints."
+      "keyword": "CNN",
+      "context": "Candidate claims expertise in CNN based on their resume."
+    },
+    {
+      "id": "claim_4",
+      "keyword": "Keras",
+      "context": "Candidate claims expertise in Keras based on their resume."
+    },
+    {
+      "id": "claim_5",
+      "keyword": "Machine Learning",
+      "context": "Candidate claims expertise in Machine Learning based on their resume."
     }
   ]
 }

@@ -41,17 +41,14 @@ def clean_text(text):
             
     return "\n".join(final_lines)
 
-def main():
-    pdf_path = sys.argv[1] if len(sys.argv) > 1 else "resume.pdf"
+def run_phase_1(pdf_path="resume.pdf"):
     if not os.path.exists(pdf_path):
-        print(f"Error: {pdf_path} not found in the current directory.", file=sys.stderr)
-        sys.exit(1)
+        raise FileNotFoundError(f"Error: {pdf_path} not found in the current directory.")
         
     try:
         doc = fitz.open(pdf_path)
     except Exception as e:
-        print(f"Error opening PDF: {e}", file=sys.stderr)
-        sys.exit(1)
+        raise RuntimeError(f"Error opening PDF: {e}")
         
     full_text = []
     for page_num in range(len(doc)):
@@ -65,6 +62,8 @@ def main():
     print("--- EXTRACTED AND CLEANED TEXT ---")
     print(cleaned)
     print("----------------------------------")
+    return cleaned
 
 if __name__ == "__main__":
-    main()
+    pdf_file = sys.argv[1] if len(sys.argv) > 1 else "resume.pdf"
+    run_phase_1(pdf_file)

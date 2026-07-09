@@ -47,16 +47,31 @@ with st.sidebar:
                     if match:
                         username = match.group(1)
                 
-                # 2. Try from PDF
+                # 2. Try from PDF text and hidden hyperlinks
                 if not username:
                     try:
                         doc = fitz.open("resume.pdf")
-                        full_text = ""
+                        
+                        # First check hidden hyperlinks
                         for page in doc:
-                            full_text += page.get_text("text") + "\n"
-                        match = re.search(r"github\.com/([^/\s]+)", full_text, re.IGNORECASE)
-                        if match:
-                            username = match.group(1)
+                            for link in page.get_links():
+                                uri = link.get("uri", "")
+                                if uri:
+                                    match = re.search(r"github\.com/([^/\s]+)", uri, re.IGNORECASE)
+                                    if match:
+                                        username = match.group(1)
+                                        break
+                            if username:
+                                break
+                                
+                        # If not found in links, check raw text
+                        if not username:
+                            full_text = ""
+                            for page in doc:
+                                full_text += page.get_text("text") + "\n"
+                            match = re.search(r"github\.com/([^/\s]+)", full_text, re.IGNORECASE)
+                            if match:
+                                username = match.group(1)
                     except Exception as e:
                         pass
                 
@@ -95,10 +110,19 @@ if os.path.exists(report_path):
             data = json.load(f)
             audit_report = data.get("audit_report", [])
             
+            candidate_name = "Unknown Candidate"
+            if os.path.exists("candidate_info.json"):
+                with open("candidate_info.json", "r", encoding="utf-8") as f_info:
+                    try:
+                        info_data = json.load(f_info)
+                        candidate_name = info_data.get("candidate_name", candidate_name)
+                    except:
+                        pass
+            
             # Display high-level candidate info
             st.subheader("Candidate Overview")
             col1, col2 = st.columns(2)
-            col1.metric("Candidate Name", "Abhinav Basam")  
+            col1.metric("Candidate Name", candidate_name)  
             col2.metric("Target Role", target_role)
             
             st.subheader("Skill Verification Results")

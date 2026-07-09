@@ -10,7 +10,7 @@ from chromadb.utils import embedding_functions
 # Import the chunking function from phase 2
 from phase_2 import get_github_code_chunks
 
-async def build_and_query_db():
+async def run_phase_3():
     print("--- PHASE 3: Vectorization and Retrieval Engine ---")
     
     # 1. Fetch the chunks from Phase 2
@@ -18,8 +18,7 @@ async def build_and_query_db():
     chunks = await get_github_code_chunks()
     
     if not chunks:
-        print("No chunks were retrieved from Phase 2. Exiting.", file=sys.stderr)
-        sys.exit(1)
+        raise ValueError("No chunks were retrieved from Phase 2. Exiting.")
         
     print(f"Retrieved {len(chunks)} code chunks.")
     
@@ -54,16 +53,14 @@ async def build_and_query_db():
     # 3. Load Claims Payload
     claims_path = "claims_payload.json"
     if not os.path.exists(claims_path):
-        print(f"Error: {claims_path} not found.", file=sys.stderr)
-        sys.exit(1)
+        raise FileNotFoundError(f"Error: {claims_path} not found.")
         
     with open(claims_path, "r", encoding="utf-8") as f:
         payload = json.load(f)
         
     claims = payload.get("claims", [])
     if not claims:
-        print("No claims found in payload.", file=sys.stderr)
-        sys.exit(1)
+        raise ValueError("No claims found in payload.")
         
     # Pick a claim to query (e.g., the first one, or search for 'Python' / 'CNN')
     # Let's search for the "Python" claim
@@ -100,4 +97,4 @@ async def build_and_query_db():
     print("\nPhase 3 execution completed successfully.")
 
 if __name__ == "__main__":
-    asyncio.run(build_and_query_db())
+    asyncio.run(run_phase_3())

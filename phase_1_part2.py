@@ -48,17 +48,14 @@ def extract_keywords(text):
             
     return found_keywords
 
-def main():
-    pdf_path = sys.argv[1] if len(sys.argv) > 1 else "resume.pdf"
+def run_phase_1_part2(pdf_path="resume.pdf"):
     if not os.path.exists(pdf_path):
-        print(f"Error: {pdf_path} not found in the current directory.", file=sys.stderr)
-        sys.exit(1)
+        raise FileNotFoundError(f"Error: {pdf_path} not found in the current directory.")
         
     try:
         doc = fitz.open(pdf_path)
     except Exception as e:
-        print(f"Error opening PDF: {e}", file=sys.stderr)
-        sys.exit(1)
+        raise RuntimeError(f"Error opening PDF: {e}")
         
     # 1. Extract raw text
     full_text = []
@@ -68,6 +65,17 @@ def main():
         full_text.append(text)
         
     raw_text = "\n".join(full_text)
+    
+    # Extract candidate name (first non-empty line)
+    candidate_name = "Unknown Candidate"
+    for line in raw_text.splitlines():
+        if line.strip():
+            candidate_name = line.strip()
+            break
+            
+    import json
+    with open("candidate_info.json", "w", encoding="utf-8") as f:
+        json.dump({"candidate_name": candidate_name}, f)
     
     # 2. Clean text using the function from Phase 1
     cleaned = clean_text(raw_text)
@@ -80,17 +88,36 @@ def main():
         print("Found the following technical keywords:\n")
         # Sort by frequency descending
         sorted_keywords = sorted(keyword_frequencies.items(), key=lambda item: item[1], reverse=True)
+        
+        claims = []
+        claim_id = 1
         for kw, count in sorted_keywords:
             print(f"- {kw}: {count} occurrence(s)")
+            
+            # Create a claim for the top 5 keywords
+            if claim_id <= 5:
+                claims.append({
+                    "id": f"claim_{claim_id}",
+                    "keyword": kw,
+                    "context": f"Candidate claims expertise in {kw} based on their resume."
+                })
+                claim_id += 1
+                
+        # Dynamically save to claims_payload.json
+        with open("claims_payload.json", "w", encoding="utf-8") as f:
+            json.dump({"claims": claims}, f, indent=2)
+        print("\nDynamically generated claims_payload.json!")
     else:
         print("No targeted technical keywords found.")
+        # Create an empty claims payload if none found
+        with open("claims_payload.json", "w", encoding="utf-8") as f:
+            json.dump({"claims": []}, f, indent=2)
     print("-----------------------------------")
     
     # 4. Extract GitHub Username
     github_match = re.search(r'github\.com/([A-Za-z0-9_-]+)', cleaned, re.IGNORECASE)
     if github_match:
         username = github_match.group(1)
-        import json
         with open("github_config.json", "w") as f:
             json.dump({"github_username": username}, f)
         print(f"Extracted GitHub Username: {username}")
@@ -99,4 +126,5 @@ def main():
         print("No GitHub URL found in the resume.")
 
 if __name__ == "__main__":
-    main()
+    pdf_file = sys.argv[1] if len(sys.argv) > 1 else "resume.pdf"
+    run_phase_1_part2(pdf_file)

@@ -18,9 +18,9 @@ def mock_llm_call(prompt_val):
     verdict = "Verified"
     if "CNN" in prompt_str or "Convolutional" in prompt_str:
         # Check if the dogclassifier repo or tensorflow logic is in the code evidence
-        if "dogclassifier" in prompt_str.lower() or "tensorflow" in prompt_str.lower() or "keras" in prompt_str.lower() or "conv" in prompt_str.lower():
+        if "dogclassifier" in prompt_str.lower() or "dogcnn" in prompt_str.lower() or "tensorflow" in prompt_str.lower() or "keras" in prompt_str.lower() or "conv" in prompt_str.lower():
             verdict = "Verified"
-            reasoning = "Code chunks from the candidate's repository (e.g., dogclassifier) confirm implementation of Convolutional Neural Networks and image classification."
+            reasoning = "Code chunks from the candidate's repository confirm implementation of Convolutional Neural Networks and image classification."
         else:
             verdict = "Hallucinated"
             reasoning = "No evidence of CNN or image classification logic in the provided codebase chunks."
@@ -38,29 +38,26 @@ def mock_llm_call(prompt_val):
     # Return it as a JSON string to simulate an LLM's raw output before parsing
     return json.dumps(response)
 
-def main():
+def run_phase_4():
     print("--- PHASE 4: The Judge Agent ---")
     
     # 1. Load Claims Payload
     claims_path = "claims_payload.json"
     if not os.path.exists(claims_path):
-        print(f"Error: {claims_path} not found.", file=sys.stderr)
-        sys.exit(1)
+        raise FileNotFoundError(f"Error: {claims_path} not found.")
         
     with open(claims_path, "r", encoding="utf-8") as f:
         payload = json.load(f)
         
     claims = payload.get("claims", [])
     if not claims:
-        print("No claims found to evaluate.", file=sys.stderr)
-        sys.exit(1)
+        raise ValueError("No claims found to evaluate.")
         
     # 2. Connect to ChromaDB
     print("Connecting to ChromaDB 'repo_code' collection...")
     db_path = os.path.join(os.getcwd(), "chroma_db")
     if not os.path.exists(db_path):
-        print(f"Error: ChromaDB directory '{db_path}' not found.", file=sys.stderr)
-        sys.exit(1)
+        raise FileNotFoundError(f"Error: ChromaDB directory '{db_path}' not found.")
         
     client = chromadb.PersistentClient(path=db_path)
     embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
@@ -68,8 +65,7 @@ def main():
     try:
         collection = client.get_collection(name="repo_code", embedding_function=embedding_func)
     except Exception as e:
-        print(f"Error retrieving collection: {e}", file=sys.stderr)
-        sys.exit(1)
+        raise RuntimeError(f"Error retrieving collection: {e}")
         
     # 3. Setup LangChain Prompt and Chain
     # The prompt instructs the LLM to act as a senior technical interviewer
@@ -105,10 +101,10 @@ Evaluate if the code supports the claim. You must respond in a structured JSON f
         claim_context = claim["context"]
         print(f"Analyzing claim: {claim['keyword']}...")
         
-        # Retrieve top 3 chunks
+        # Retrieve top 15 chunks
         results = collection.query(
             query_texts=[claim_context],
-            n_results=3
+            n_results=15
         )
         
         docs = results.get("documents", [[]])[0]
@@ -148,4 +144,4 @@ Evaluate if the code supports the claim. You must respond in a structured JSON f
     print("To use a real model, replace `mock_llm` with your initialized LLM (e.g., `ChatOpenAI(api_key='YOUR_API_KEY')`).")
 
 if __name__ == "__main__":
-    main()
+    run_phase_4()

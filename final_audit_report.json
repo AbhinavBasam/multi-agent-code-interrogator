@@ -3,23 +3,37 @@
     {
       "id": "claim_1",
       "keyword": "Python",
-      "context": "Expertise in Python programming, asynchronous processing, and scripting.",
+      "context": "Candidate claims expertise in Python based on their resume.",
       "verdict": "Verified",
       "reasoning": "The retrieved code chunks explicitly demonstrate the expertise related to the claim."
     },
     {
       "id": "claim_2",
-      "keyword": "CNN",
-      "context": "Experience building Convolutional Neural Networks for image classification.",
+      "keyword": "TensorFlow",
+      "context": "Candidate claims expertise in TensorFlow based on their resume.",
       "verdict": "Verified",
-      "reasoning": "Code chunks from the candidate's repository (e.g., dogclassifier) confirm implementation of Convolutional Neural Networks and image classification."
+      "reasoning": "The retrieved code chunks explicitly demonstrate the expertise related to the claim."
     },
     {
       "id": "claim_3",
-      "keyword": "FastAPI",
-      "context": "Backend development utilizing FastAPI for performant REST endpoints.",
-      "verdict": "Partial",
-      "reasoning": "The code shows generic API endpoint usage but not explicit FastAPI endpoints."
+      "keyword": "CNN",
+      "context": "Candidate claims expertise in CNN based on their resume.",
+      "verdict": "Hallucinated",
+      "reasoning": "No evidence of CNN or image classification logic in the provided codebase chunks."
+    },
+    {
+      "id": "claim_4",
+      "keyword": "Keras",
+      "context": "Candidate claims expertise in Keras based on their resume.",
+      "verdict": "Verified",
+      "reasoning": "The retrieved code chunks explicitly demonstrate the expertise related to the claim."
+    },
+    {
+      "id": "claim_5",
+      "keyword": "Machine Learning",
+      "context": "Candidate claims expertise in Machine Learning based on their resume.",
+      "verdict": "Verified",
+      "reasoning": "The retrieved code chunks explicitly demonstrate the expertise related to the claim."
     }
   ]
 }

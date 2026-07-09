@@ -32,11 +32,11 @@ async def download_file(session, owner, repo, branch, path, token=None, semaphor
                 return None
 
 def is_programming_logic_file(path):
-    logic_extensions = {".py", ".java", ".cpp", ".c", ".h", ".js", ".ts", ".go", ".rs", ".rb", ".php"}
+    logic_extensions = {".py", ".java", ".cpp", ".c", ".h", ".js", ".ts", ".go", ".rs", ".rb", ".php", ".ipynb"}
     _, ext = os.path.splitext(path)
     return ext.lower() in logic_extensions
 
-async def get_github_code_chunks(max_files_per_repo=5):
+async def get_github_code_chunks(max_files_per_repo=20):
     github_token = os.environ.get("GITHUB_TOKEN")
     
     username = "encode" # fallback
@@ -60,7 +60,7 @@ async def get_github_code_chunks(max_files_per_repo=5):
             repos = await resp.json()
             
         all_raw_texts = []
-        semaphore = asyncio.Semaphore(10)
+        semaphore = asyncio.Semaphore(50)
         
         for repo_obj in repos:
             repo_name = repo_obj["name"]
