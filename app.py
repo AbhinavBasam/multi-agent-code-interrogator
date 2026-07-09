@@ -24,7 +24,6 @@ It utilizes a multi-agent architecture to extract claims, ingest repository code
 # Sidebar for simulating the initial ingestion phase
 with st.sidebar:
     st.header("Ingestion Configuration")
-    candidate_name = st.text_input("Candidate Name", "Abhinav Basam")
     target_role = st.text_input("Target Role", "AI & ML Engineer")
     uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"])
     github_url = st.text_input("GitHub Repository URL (Optional, will read from resume if blank)", "")
@@ -99,7 +98,7 @@ if os.path.exists(report_path):
             # Display high-level candidate info
             st.subheader("Candidate Overview")
             col1, col2 = st.columns(2)
-            col1.metric("Candidate Name", candidate_name)  
+            col1.metric("Candidate Name", "Abhinav Basam")  
             col2.metric("Target Role", target_role)
             
             st.subheader("Skill Verification Results")
