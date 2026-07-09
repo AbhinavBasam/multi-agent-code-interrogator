@@ -8,7 +8,6 @@ from chromadb.utils import embedding_functions
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableLambda
 from langchain_core.output_parsers import JsonOutputParser
-from langchain_community.llms import Ollama
 
 def mock_llm_call(prompt_val):
     import re
@@ -112,17 +111,13 @@ Evaluate if the code supports the claim. You must respond in a structured JSON f
     # Normally we would use something like ChatOpenAI(temperature=0), 
     # but we use a mock for the demo to run end-to-end without an API key
     # llm = ChatOpenAI(model="gpt-4o", temperature=0)
-    # mock_llm = RunnableLambda(mock_llm_call)
-    
-    # Initialize your local Ollama model (e.g., Llama 3)
-    print("Initializing Ollama local AI model (llama3)...")
-    llm = Ollama(model="llama3", format="json")
+    mock_llm = RunnableLambda(mock_llm_call)
     
     # JSON output parser ensures we get a Python dict from the LLM's JSON string
     parser = JsonOutputParser()
     
     # Combine everything into a pipeline
-    chain = prompt | llm | parser
+    chain = prompt | mock_llm | parser
     
     # 4. Evaluate Each Claim
     print("\nEvaluating claims...\n")
