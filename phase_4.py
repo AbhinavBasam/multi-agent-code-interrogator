@@ -8,10 +8,12 @@ from chromadb.utils import embedding_functions
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableLambda
 from langchain_core.output_parsers import JsonOutputParser
+from langchain_community.llms import Ollama
 
 def mock_llm_call(prompt_val):
     import re
-    prompt_str = str(prompt_val)
+    # Extract the actual string value from the LangChain prompt object
+    prompt_str = prompt_val.to_string()
     
     # Safely extract the claim being evaluated to prevent overlap with code evidence
     claim_match = re.search(r"Claim:\s*(.*?)\n", prompt_str)
@@ -21,20 +23,40 @@ def mock_llm_call(prompt_val):
     repos = set(re.findall(r"^---\s*Repository:\s*([^|\s]+)\s*\|", prompt_str, re.MULTILINE))
     repo_context = f"repositories ({', '.join(repos)})" if repos else "repository"
     
-    verdict = "Verified"
-    if "cnn" in claim_text or "convolutional" in claim_text:
-        if "dogclassifier" in prompt_str.lower() or "dogcnn" in prompt_str.lower() or "tensorflow" in prompt_str.lower() or "keras" in prompt_str.lower() or "conv" in prompt_str.lower():
-            verdict = "Verified"
-            reasoning = f"Code chunks from the candidate's {repo_context} confirm implementation of Convolutional Neural Networks and image classification."
-        else:
-            verdict = "Hallucinated"
-            reasoning = "No evidence of CNN or image classification logic in the provided codebase chunks."
-    elif "fastapi" in claim_text:
-        verdict = "Partial"
-        reasoning = f"The code in the candidate's {repo_context} shows generic API endpoint usage but not explicit FastAPI endpoints."
-    else:
+    # If there is no code evidence at all (i.e., no repos were scanned)
+    if not repos:
+        return json.dumps({
+            "verdict": "Hallucinated",
+            "reasoning": f"No code repositories could be successfully scanned to verify '{claim_text}'."
+        })
+
+    # Advanced Mock Logic: Actually scan the code evidence for keywords/syntax related to the claim!
+    code_evidence_lower = prompt_str.lower()
+    
+    # Define common tech synonyms/indicators in code
+    tech_indicators = {
+        "python": [".py", "def ", "import ", "print("],
+        "react": ["react", ".jsx", ".tsx", "useeffect", "usestate", "export default function", "npm"],
+        "java": [".java", "public class ", "system.out", "public static void"],
+        "sql": [".sql", "select ", "insert into", "create table", "query"],
+        "tensorflow": ["tensorflow", "tf.", "keras", "sequential"],
+        "cnn": ["conv2d", "maxpooling", "keras", "tensorflow"],
+        "convolutional": ["conv2d", "maxpooling", "keras", "tensorflow"],
+        "machine learning": ["sklearn", "model.fit", "predict", "import pandas", "import numpy"]
+    }
+    
+    # If we don't have hardcoded indicators, just look for the claim text itself
+    indicators = tech_indicators.get(claim_text, [claim_text])
+    
+    # Check if ANY of the indicators exist in the code evidence
+    found = any(ind in code_evidence_lower for ind in indicators)
+    
+    if found:
         verdict = "Verified"
-        reasoning = f"The retrieved code chunks from the candidate's {repo_context} explicitly demonstrate the expertise related to the claim."
+        reasoning = f"Code chunks from the candidate's {repo_context} contain explicit syntax or library imports confirming {claim_text} expertise."
+    else:
+        verdict = "Hallucinated"
+        reasoning = f"After scanning the candidate's {repo_context}, no evidence, syntax, or library usage for '{claim_text}' was found in the codebase."
         
     response = {
         "verdict": verdict,
@@ -90,13 +112,17 @@ Evaluate if the code supports the claim. You must respond in a structured JSON f
     # Normally we would use something like ChatOpenAI(temperature=0), 
     # but we use a mock for the demo to run end-to-end without an API key
     # llm = ChatOpenAI(model="gpt-4o", temperature=0)
-    mock_llm = RunnableLambda(mock_llm_call)
+    # mock_llm = RunnableLambda(mock_llm_call)
+    
+    # Initialize your local Ollama model (e.g., Llama 3)
+    print("Initializing Ollama local AI model (llama3)...")
+    llm = Ollama(model="llama3", format="json")
     
     # JSON output parser ensures we get a Python dict from the LLM's JSON string
     parser = JsonOutputParser()
     
     # Combine everything into a pipeline
-    chain = prompt | mock_llm | parser
+    chain = prompt | llm | parser
     
     # 4. Evaluate Each Claim
     print("\nEvaluating claims...\n")
