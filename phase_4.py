@@ -13,19 +13,23 @@ def mock_llm_call(prompt_val):
     import re
     prompt_str = str(prompt_val)
     
-    # Extract unique repository names from the code evidence headers
-    repos = set(re.findall(r"--- Repository:\s*([^|\s]+)\s*\|", prompt_str))
+    # Safely extract the claim being evaluated to prevent overlap with code evidence
+    claim_match = re.search(r"Claim:\s*(.*?)\n", prompt_str)
+    claim_text = claim_match.group(1).lower() if claim_match else ""
+    
+    # Extract unique repository names from the code evidence headers only
+    repos = set(re.findall(r"^---\s*Repository:\s*([^|\s]+)\s*\|", prompt_str, re.MULTILINE))
     repo_context = f"repositories ({', '.join(repos)})" if repos else "repository"
     
     verdict = "Verified"
-    if "CNN" in prompt_str or "Convolutional" in prompt_str:
+    if "cnn" in claim_text or "convolutional" in claim_text:
         if "dogclassifier" in prompt_str.lower() or "dogcnn" in prompt_str.lower() or "tensorflow" in prompt_str.lower() or "keras" in prompt_str.lower() or "conv" in prompt_str.lower():
             verdict = "Verified"
             reasoning = f"Code chunks from the candidate's {repo_context} confirm implementation of Convolutional Neural Networks and image classification."
         else:
             verdict = "Hallucinated"
             reasoning = "No evidence of CNN or image classification logic in the provided codebase chunks."
-    elif "FastAPI" in prompt_str:
+    elif "fastapi" in claim_text:
         verdict = "Partial"
         reasoning = f"The code in the candidate's {repo_context} shows generic API endpoint usage but not explicit FastAPI endpoints."
     else:
