@@ -25,10 +25,59 @@ It utilizes a multi-agent architecture to extract claims, ingest repository code
 with st.sidebar:
     st.header("Ingestion Configuration")
     uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"])
-    github_url = st.text_input("GitHub Repository URL", "https://github.com/encode/starlette")
+    github_url = st.text_input("GitHub Repository URL (Optional, will read from resume if blank)", "")
     
     if st.button("Run Audit Pipeline", type="primary"):
-        st.info("In a live deployment, this would trigger Phases 1-4 pipeline asynchronously. For now, we are displaying the most recent local audit.")
+        if not uploaded_file:
+            st.warning("Please upload a resume first.")
+        else:
+            with st.spinner("Running Audit Pipeline... This may take a few minutes."):
+                # Save the uploaded file
+                with open("resume.pdf", "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+                
+                username = None
+                import re
+                import fitz
+                
+                # 1. Try from input URL
+                if github_url.strip():
+                    match = re.search(r"github\.com/([^/\s]+)", github_url)
+                    if match:
+                        username = match.group(1)
+                
+                # 2. Try from PDF
+                if not username:
+                    try:
+                        doc = fitz.open("resume.pdf")
+                        full_text = ""
+                        for page in doc:
+                            full_text += page.get_text("text") + "\n"
+                        match = re.search(r"github\.com/([^/\s]+)", full_text, re.IGNORECASE)
+                        if match:
+                            username = match.group(1)
+                    except Exception as e:
+                        pass
+                
+                if not username:
+                    st.error("Could not find a GitHub URL in the provided input or the resume PDF.")
+                    st.stop()
+                    
+                # Save to github_config.json
+                with open("github_config.json", "w") as f:
+                    json.dump({"github_username": username}, f)
+                
+                # Run the pipeline
+                import subprocess
+                try:
+                    subprocess.run([sys.executable, "phase_1.py", "resume.pdf"], check=True)
+                    subprocess.run([sys.executable, "phase_1_part2.py", "resume.pdf"], check=True)
+                    subprocess.run([sys.executable, "phase_2.py"], check=True)
+                    subprocess.run([sys.executable, "phase_3.py"], check=True)
+                    subprocess.run([sys.executable, "phase_4.py"], check=True)
+                    st.success("Pipeline completed successfully!")
+                except subprocess.CalledProcessError as e:
+                    st.error(f"Pipeline failed at a step. Check your terminal logs.")
 
 st.divider()
 st.header("Final Audit Report")
