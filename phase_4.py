@@ -101,10 +101,10 @@ Evaluate if the code supports the claim. You must respond in a structured JSON f
         claim_context = claim["context"]
         print(f"Analyzing claim: {claim['keyword']}...")
         
-        # Retrieve top 15 chunks
+        # Retrieve top 10 chunks (chunks are now larger)
         results = collection.query(
             query_texts=[claim_context],
-            n_results=15
+            n_results=10
         )
         
         docs = results.get("documents", [[]])[0]

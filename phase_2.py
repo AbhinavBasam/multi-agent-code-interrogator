@@ -36,7 +36,7 @@ def is_programming_logic_file(path):
     _, ext = os.path.splitext(path)
     return ext.lower() in logic_extensions
 
-async def get_github_code_chunks(max_files_per_repo=20):
+async def get_github_code_chunks(max_files_per_repo=10):
     github_token = os.environ.get("GITHUB_TOKEN")
     
     username = "encode" # fallback
@@ -58,6 +58,10 @@ async def get_github_code_chunks(max_files_per_repo=20):
                 print(f"Failed to fetch repositories for user {username}")
                 return []
             repos = await resp.json()
+            
+        # Optimization: Only process the 5 most recently updated repositories
+        repos.sort(key=lambda r: r.get("updated_at", ""), reverse=True)
+        repos = repos[:5]
             
         all_raw_texts = []
         semaphore = asyncio.Semaphore(50)
@@ -90,8 +94,8 @@ async def get_github_code_chunks(max_files_per_repo=20):
             return []
             
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=500,
-            chunk_overlap=50,
+            chunk_size=1000,
+            chunk_overlap=100,
             length_function=len,
         )
         
