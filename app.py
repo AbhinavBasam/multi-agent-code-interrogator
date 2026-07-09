@@ -46,15 +46,12 @@ st.markdown("""
     hr {
         border-bottom-color: #222222 !important;
     }
+    button[kind="primary"] * {
+        color: #000000 !important;
+        font-weight: 600;
+    }
 </style>
 """, unsafe_allow_html=True)
-
-# App Header & Description
-st.title("CodeAudit AI")
-st.markdown("""
-Welcome to **CodeAudit AI: Technical Profile Verification**. This enterprise system evaluates a candidate's technical claims by deeply cross-referencing their resume with their actual GitHub codebase. 
-It utilizes a multi-agent architecture to extract claims, ingest repository code into a vector database, and perform semantic verification via LLMs.
-""")
 
 # Sidebar for simulating the initial ingestion phase
 with st.sidebar:
@@ -185,13 +182,13 @@ if os.path.exists(report_path):
                     
                     if verdict == "Verified":
                         status_badge = "VERIFIED"
-                        color = "#ffffff"
+                        color = "#4ADE80" # minimal green
                     elif verdict == "Partial":
                         status_badge = "PARTIAL"
-                        color = "#888888"
+                        color = "#FACC15" # minimal yellow
                     else:
                         status_badge = "HALLUCINATED"
-                        color = "#444444"
+                        color = "#F87171" # minimal red
                         
                     # Build expander for each claim
                     with st.expander(f"{status_badge}  |  {keyword}"):
@@ -203,3 +200,11 @@ if os.path.exists(report_path):
             st.error("Error reading the final audit report JSON. Ensure it is formatted correctly.")
 else:
     st.error(f"Audit report not found at `{report_path}`. Please run Phase 4 first to generate the report.")
+
+st.divider()
+# App Header & Description moved to bottom
+st.title("CodeAudit AI")
+st.markdown("""
+Welcome to **CodeAudit AI: Technical Profile Verification**. This enterprise system evaluates a candidate's technical claims by deeply cross-referencing their resume with their actual GitHub codebase. 
+It utilizes a multi-agent architecture to extract claims, ingest repository code into a vector database, and perform semantic verification via LLMs.
+""")
