@@ -10,26 +10,27 @@ from langchain_core.runnables import RunnableLambda
 from langchain_core.output_parsers import JsonOutputParser
 
 def mock_llm_call(prompt_val):
-    # This acts as our dummy LLM response
-    # It analyzes the prompt string to figure out what claim we are evaluating,
-    # but since it's a mock, we can just return a deterministic generic response.
+    import re
     prompt_str = str(prompt_val)
+    
+    # Extract unique repository names from the code evidence headers
+    repos = set(re.findall(r"--- Repository:\s*([^|\s]+)\s*\|", prompt_str))
+    repo_context = f"repositories ({', '.join(repos)})" if repos else "repository"
     
     verdict = "Verified"
     if "CNN" in prompt_str or "Convolutional" in prompt_str:
-        # Check if the dogclassifier repo or tensorflow logic is in the code evidence
         if "dogclassifier" in prompt_str.lower() or "dogcnn" in prompt_str.lower() or "tensorflow" in prompt_str.lower() or "keras" in prompt_str.lower() or "conv" in prompt_str.lower():
             verdict = "Verified"
-            reasoning = "Code chunks from the candidate's repository confirm implementation of Convolutional Neural Networks and image classification."
+            reasoning = f"Code chunks from the candidate's {repo_context} confirm implementation of Convolutional Neural Networks and image classification."
         else:
             verdict = "Hallucinated"
             reasoning = "No evidence of CNN or image classification logic in the provided codebase chunks."
     elif "FastAPI" in prompt_str:
         verdict = "Partial"
-        reasoning = "The code shows generic API endpoint usage but not explicit FastAPI endpoints."
+        reasoning = f"The code in the candidate's {repo_context} shows generic API endpoint usage but not explicit FastAPI endpoints."
     else:
         verdict = "Verified"
-        reasoning = "The retrieved code chunks explicitly demonstrate the expertise related to the claim."
+        reasoning = f"The retrieved code chunks from the candidate's {repo_context} explicitly demonstrate the expertise related to the claim."
         
     response = {
         "verdict": verdict,
