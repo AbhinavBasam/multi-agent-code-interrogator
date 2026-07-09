@@ -9,31 +9,31 @@
     },
     {
       "id": "claim_2",
-      "keyword": "TensorFlow",
-      "context": "Candidate claims expertise in TensorFlow based on their resume.",
-      "verdict": "Verified",
-      "reasoning": "The retrieved code chunks explicitly demonstrate the expertise related to the claim."
-    },
-    {
-      "id": "claim_3",
-      "keyword": "CNN",
-      "context": "Candidate claims expertise in CNN based on their resume.",
-      "verdict": "Hallucinated",
-      "reasoning": "No evidence of CNN or image classification logic in the provided codebase chunks."
-    },
-    {
-      "id": "claim_4",
-      "keyword": "Keras",
-      "context": "Candidate claims expertise in Keras based on their resume.",
-      "verdict": "Verified",
-      "reasoning": "The retrieved code chunks explicitly demonstrate the expertise related to the claim."
-    },
-    {
-      "id": "claim_5",
       "keyword": "Machine Learning",
       "context": "Candidate claims expertise in Machine Learning based on their resume.",
       "verdict": "Verified",
-      "reasoning": "The retrieved code chunks explicitly demonstrate the expertise related to the claim."
+      "reasoning": "Code chunks from the candidate's repository confirm implementation of Convolutional Neural Networks and image classification."
+    },
+    {
+      "id": "claim_3",
+      "keyword": "scikit-learn",
+      "context": "Candidate claims expertise in scikit-learn based on their resume.",
+      "verdict": "Verified",
+      "reasoning": "Code chunks from the candidate's repository confirm implementation of Convolutional Neural Networks and image classification."
+    },
+    {
+      "id": "claim_4",
+      "keyword": "CNN",
+      "context": "Candidate claims expertise in CNN based on their resume.",
+      "verdict": "Verified",
+      "reasoning": "Code chunks from the candidate's repository confirm implementation of Convolutional Neural Networks and image classification."
+    },
+    {
+      "id": "claim_5",
+      "keyword": "NumPy",
+      "context": "Candidate claims expertise in NumPy based on their resume.",
+      "verdict": "Verified",
+      "reasoning": "Code chunks from the candidate's repository confirm implementation of Convolutional Neural Networks and image classification."
     }
   ]
 }

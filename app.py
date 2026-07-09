@@ -12,12 +12,31 @@ if hasattr(sys.stdout, "reconfigure"):
         pass
 
 # Configure the main page layout
-st.set_page_config(page_title="Multi-Agent Code Interrogator", page_icon="🕵️‍♂️", layout="wide")
+st.set_page_config(page_title="CodeAudit AI", page_icon="💻", layout="wide")
+
+# Custom Cyber CSS
+st.markdown("""
+<style>
+    div[data-testid="stMetricValue"] {
+        color: #00E5FF !important;
+        font-weight: bold;
+    }
+    div[data-testid="stExpander"] details summary {
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        background-color: #121E3F;
+        border-radius: 4px;
+    }
+    div[data-testid="stExpander"] details {
+        border: 1px solid rgba(0, 229, 255, 0.1);
+        border-radius: 4px;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # App Header & Description
-st.title("🕵️‍♂️ Multi-Agent Code Interrogator")
+st.title("CodeAudit AI")
 st.markdown("""
-Welcome to the Multi-Agent Code Interrogator. This system evaluates a candidate's resume claims by deeply cross-referencing them with their actual GitHub codebase. 
+Welcome to **CodeAudit AI: Technical Profile Verification**. This enterprise system evaluates a candidate's technical claims by deeply cross-referencing their resume with their actual GitHub codebase. 
 It utilizes a multi-agent architecture to extract claims, ingest repository code into a vector database, and perform semantic verification via LLMs.
 """)
 
@@ -148,21 +167,20 @@ if os.path.exists(report_path):
                     context = claim.get("context", "No context provided.")
                     reasoning = claim.get("reasoning", "No reasoning provided.")
                     
-                    # Using unicode escapes instead of raw emojis to prevent any Windows encoding errors
                     if verdict == "Verified":
-                        emoji = "\u2705"  # Check mark
-                        color = "green"
+                        status_badge = "[VERIFIED]"
+                        color = "#00E5FF" # neon cyan
                     elif verdict == "Partial":
-                        emoji = "\u26A0\uFE0F"  # Warning sign
-                        color = "orange"
+                        status_badge = "[PARTIAL]"
+                        color = "#FFD700" # neon gold
                     else:
-                        emoji = "\u274C"  # Cross mark
-                        color = "red"
+                        status_badge = "[HALLUCINATED]"
+                        color = "#FF3366" # neon pink/red
                         
                     # Build expander for each claim
-                    with st.expander(f"{emoji} **{keyword}** - {verdict}"):
-                        st.markdown(f"**Claim Context:** {context}")
-                        st.markdown(f"**Verdict:** :{color}[**{verdict}**]")
+                    with st.expander(f"{status_badge}  {keyword}"):
+                        st.markdown(f"**Context:** {context}")
+                        st.markdown(f"**Verdict:** <span style='color:{color}; font-weight:bold;'>{verdict.upper()}</span>", unsafe_allow_html=True)
                         st.markdown(f"**Reasoning:** {reasoning}")
                         
         except json.JSONDecodeError:

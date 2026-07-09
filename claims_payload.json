@@ -7,23 +7,23 @@
     },
     {
       "id": "claim_2",
-      "keyword": "TensorFlow",
-      "context": "Candidate claims expertise in TensorFlow based on their resume."
+      "keyword": "Machine Learning",
+      "context": "Candidate claims expertise in Machine Learning based on their resume."
     },
     {
       "id": "claim_3",
+      "keyword": "scikit-learn",
+      "context": "Candidate claims expertise in scikit-learn based on their resume."
+    },
+    {
+      "id": "claim_4",
       "keyword": "CNN",
       "context": "Candidate claims expertise in CNN based on their resume."
     },
     {
-      "id": "claim_4",
-      "keyword": "Keras",
-      "context": "Candidate claims expertise in Keras based on their resume."
-    },
-    {
       "id": "claim_5",
-      "keyword": "Machine Learning",
-      "context": "Candidate claims expertise in Machine Learning based on their resume."
+      "keyword": "NumPy",
+      "context": "Candidate claims expertise in NumPy based on their resume."
     }
   ]
 }
