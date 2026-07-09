@@ -17,10 +17,10 @@ async def run_phase_3():
     print("Fetching code chunks from Phase 2...")
     chunks = await get_github_code_chunks()
     
-    if not chunks:
-        raise ValueError("No chunks were retrieved from Phase 2. Exiting.")
+    if chunks is None:
+        chunks = []
         
-    print(f"Retrieved {len(chunks)} code chunks.")
+    print(f"Retrieved {len(chunks)} new/updated code chunks.")
     
     # 2. Initialize ChromaDB
     print("\nInitializing ChromaDB (local persistent storage)...")
@@ -30,25 +30,36 @@ async def run_phase_3():
     # Using all-MiniLM-L6-v2 as requested
     embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
     
-    # Always clear the collection on a fresh run so new repos are indexed
-    try:
-        client.delete_collection("repo_code")
-    except Exception:
-        pass
-        
-    collection = client.create_collection(
+    # Do NOT clear the collection so we keep cached repositories!
+    collection = client.get_or_create_collection(
         name="repo_code", 
         embedding_function=embedding_func
     )
     
-    print(f"Adding {len(chunks)} chunks to the 'repo_code' collection (this may take a moment)...")
-    
-    chunk_ids = [f"chunk_{i}" for i in range(len(chunks))]
-    collection.add(
-        documents=chunks,
-        ids=chunk_ids
-    )
-    print("Successfully vectorized and added chunks to ChromaDB.")
+    if chunks:
+        # Delete stale chunks for the repos we just downloaded
+        updated_repos = set(c["repo"] for c in chunks)
+        for r in updated_repos:
+            try:
+                collection.delete(where={"repo": r})
+            except Exception:
+                pass
+                
+        print(f"Adding {len(chunks)} chunks to the 'repo_code' collection (this may take a moment)...")
+        
+        import uuid
+        texts = [c["text"] for c in chunks]
+        metadatas = [{"repo": c["repo"]} for c in chunks]
+        chunk_ids = [str(uuid.uuid4()) for _ in chunks]
+        
+        collection.add(
+            documents=texts,
+            metadatas=metadatas,
+            ids=chunk_ids
+        )
+        print("Successfully vectorized and added new chunks to ChromaDB.")
+    else:
+        print("No new chunks to add (all repositories were cached and unchanged).")
         
     # 3. Load Claims Payload
     claims_path = "claims_payload.json"

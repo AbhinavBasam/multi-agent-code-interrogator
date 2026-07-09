@@ -62,12 +62,29 @@ async def get_github_code_chunks(max_files_per_repo=10):
         # Optimization: Only process the 5 most recently updated repositories
         repos.sort(key=lambda r: r.get("updated_at", ""), reverse=True)
         repos = repos[:5]
+        
+        # Load Cache
+        cache_file = "repo_cache.json"
+        repo_cache = {}
+        if os.path.exists(cache_file):
+            try:
+                with open(cache_file, "r") as f:
+                    repo_cache = json.load(f)
+            except:
+                pass
             
         all_raw_texts = []
         semaphore = asyncio.Semaphore(50)
         
         for repo_obj in repos:
             repo_name = repo_obj["name"]
+            updated_at = repo_obj.get("updated_at", "")
+            
+            cache_key = f"{username}/{repo_name}"
+            if repo_cache.get(cache_key) == updated_at:
+                print(f"Skipping repository {repo_name} (unchanged since last run).")
+                continue
+                
             branch = repo_obj.get("default_branch", "main")
             print(f"Scanning repository: {repo_name}...")
             
@@ -88,7 +105,14 @@ async def get_github_code_chunks(max_files_per_repo=10):
             for path, content in zip(logic_files, file_contents):
                 if content:
                     file_text = f"--- Repository: {repo_name} | File: {path} ---\n{content}\n"
-                    all_raw_texts.append(file_text)
+                    all_raw_texts.append((repo_name, file_text))
+                    
+            # Update cache
+            repo_cache[cache_key] = updated_at
+            
+        # Save cache
+        with open(cache_file, "w") as f:
+            json.dump(repo_cache, f)
                     
         if not all_raw_texts:
             return []
@@ -100,9 +124,10 @@ async def get_github_code_chunks(max_files_per_repo=10):
         )
         
         all_chunks = []
-        for text in all_raw_texts:
+        for repo_name, text in all_raw_texts:
             chunks = text_splitter.split_text(text)
-            all_chunks.extend(chunks)
+            for c in chunks:
+                all_chunks.append({"text": c, "repo": repo_name})
             
         return all_chunks
 
