@@ -24,7 +24,19 @@ It utilizes a multi-agent architecture to extract claims, ingest repository code
 # Sidebar for simulating the initial ingestion phase
 with st.sidebar:
     st.header("Ingestion Configuration")
-    target_role = st.text_input("Target Role", "AI & ML Engineer")
+    target_role = st.selectbox(
+        "Target Role", 
+        [
+            "AI & ML Engineer",
+            "Software Engineer",
+            "Data Scientist",
+            "Frontend Developer",
+            "Backend Developer",
+            "Full Stack Developer",
+            "DevOps Engineer",
+            "Data Engineer"
+        ]
+    )
     uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"])
     github_url = st.text_input("GitHub Repository URL (Optional, will read from resume if blank)", "")
     
