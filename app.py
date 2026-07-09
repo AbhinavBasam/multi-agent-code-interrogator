@@ -24,6 +24,8 @@ It utilizes a multi-agent architecture to extract claims, ingest repository code
 # Sidebar for simulating the initial ingestion phase
 with st.sidebar:
     st.header("Ingestion Configuration")
+    candidate_name = st.text_input("Candidate Name", "Abhinav Basam")
+    target_role = st.text_input("Target Role", "AI & ML Engineer")
     uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"])
     github_url = st.text_input("GitHub Repository URL (Optional, will read from resume if blank)", "")
     
@@ -68,16 +70,20 @@ with st.sidebar:
                     json.dump({"github_username": username}, f)
                 
                 # Run the pipeline
-                import subprocess
+                import asyncio
+                from phase_1 import run_phase_1
+                from phase_1_part2 import run_phase_1_part2
+                from phase_3 import run_phase_3
+                from phase_4 import run_phase_4
+                
                 try:
-                    subprocess.run([sys.executable, "phase_1.py", "resume.pdf"], check=True)
-                    subprocess.run([sys.executable, "phase_1_part2.py", "resume.pdf"], check=True)
-                    subprocess.run([sys.executable, "phase_2.py"], check=True)
-                    subprocess.run([sys.executable, "phase_3.py"], check=True)
-                    subprocess.run([sys.executable, "phase_4.py"], check=True)
+                    run_phase_1("resume.pdf")
+                    run_phase_1_part2("resume.pdf")
+                    asyncio.run(run_phase_3())
+                    run_phase_4()
                     st.success("Pipeline completed successfully!")
-                except subprocess.CalledProcessError as e:
-                    st.error(f"Pipeline failed at a step. Check your terminal logs.")
+                except Exception as e:
+                    st.error(f"Pipeline failed: {e}")
 
 st.divider()
 st.header("Final Audit Report")
@@ -93,8 +99,8 @@ if os.path.exists(report_path):
             # Display high-level candidate info
             st.subheader("Candidate Overview")
             col1, col2 = st.columns(2)
-            col1.metric("Candidate Name", "Abhinav Basam")  
-            col2.metric("Target Role", "AI & ML Engineer")
+            col1.metric("Candidate Name", candidate_name)  
+            col2.metric("Target Role", target_role)
             
             st.subheader("Skill Verification Results")
             
