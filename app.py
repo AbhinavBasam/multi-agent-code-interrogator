@@ -11,6 +11,9 @@ if hasattr(sys.stdout, "reconfigure"):
     except Exception:
         pass
 
+if "pipeline_completed" not in st.session_state:
+    st.session_state.pipeline_completed = False
+
 # Configure the main page layout
 st.set_page_config(page_title="CodeAudit AI", page_icon="💻", layout="wide")
 
@@ -142,6 +145,7 @@ with st.sidebar:
                     run_phase_1_part2("resume.pdf")
                     asyncio.run(run_phase_3())
                     run_phase_4()
+                    st.session_state.pipeline_completed = True
                     st.success("Pipeline completed successfully!")
                 except Exception as e:
                     st.error(f"Pipeline failed: {e}")
@@ -150,59 +154,62 @@ st.divider()
 st.header("Final Audit Report")
 
 # Load data generated from Phase 4
-report_path = "final_audit_report.json"
-if os.path.exists(report_path):
-    with open(report_path, "r", encoding="utf-8") as f:
-        try:
-            data = json.load(f)
-            audit_report = data.get("audit_report", [])
-            
-            candidate_name = "Unknown Candidate"
-            if os.path.exists("candidate_info.json"):
-                with open("candidate_info.json", "r", encoding="utf-8") as f_info:
-                    try:
-                        info_data = json.load(f_info)
-                        candidate_name = info_data.get("candidate_name", candidate_name)
-                    except:
-                        pass
-            
-            # Display high-level candidate info
-            st.subheader("Candidate Overview")
-            col1, col2 = st.columns(2)
-            col1.metric("Candidate Name", candidate_name)  
-            col2.metric("Target Role", target_role)
-            
-            st.subheader("Skill Verification Results")
-            
-            if not audit_report:
-                st.warning("No claims found in the audit report.")
-            else:
-                for claim in audit_report:
-                    keyword = claim.get("keyword", "Unknown")
-                    verdict = claim.get("verdict", "Unknown")
-                    context = claim.get("context", "No context provided.")
-                    reasoning = claim.get("reasoning", "No reasoning provided.")
-                    
-                    if verdict == "Verified":
-                        status_badge = "VERIFIED"
-                        color = "#4ADE80" # minimal green
-                    elif verdict == "Partial":
-                        status_badge = "PARTIAL"
-                        color = "#FACC15" # minimal yellow
-                    else:
-                        status_badge = "HALLUCINATED"
-                        color = "#F87171" # minimal red
+if st.session_state.pipeline_completed:
+    report_path = "final_audit_report.json"
+    if os.path.exists(report_path):
+        with open(report_path, "r", encoding="utf-8") as f:
+            try:
+                data = json.load(f)
+                audit_report = data.get("audit_report", [])
+                
+                candidate_name = "Unknown Candidate"
+                if os.path.exists("candidate_info.json"):
+                    with open("candidate_info.json", "r", encoding="utf-8") as f_info:
+                        try:
+                            info_data = json.load(f_info)
+                            candidate_name = info_data.get("candidate_name", candidate_name)
+                        except:
+                            pass
+                
+                # Display high-level candidate info
+                st.subheader("Candidate Overview")
+                col1, col2 = st.columns(2)
+                col1.metric("Candidate Name", candidate_name)  
+                col2.metric("Target Role", target_role)
+                
+                st.subheader("Skill Verification Results")
+                
+                if not audit_report:
+                    st.warning("No claims found in the audit report.")
+                else:
+                    for claim in audit_report:
+                        keyword = claim.get("keyword", "Unknown")
+                        verdict = claim.get("verdict", "Unknown")
+                        context = claim.get("context", "No context provided.")
+                        reasoning = claim.get("reasoning", "No reasoning provided.")
                         
-                    # Build expander for each claim
-                    with st.expander(f"{status_badge}  |  {keyword}"):
-                        st.markdown(f"**Context:** {context}")
-                        st.markdown(f"**Verdict:** <span style='color:{color}; font-weight:600;'>{verdict.upper()}</span>", unsafe_allow_html=True)
-                        st.markdown(f"**Reasoning:** {reasoning}")
-                        
-        except json.JSONDecodeError:
-            st.error("Error reading the final audit report JSON. Ensure it is formatted correctly.")
+                        if verdict == "Verified":
+                            status_badge = "VERIFIED"
+                            color = "#4ADE80" # minimal green
+                        elif verdict == "Partial":
+                            status_badge = "PARTIAL"
+                            color = "#FACC15" # minimal yellow
+                        else:
+                            status_badge = "HALLUCINATED"
+                            color = "#F87171" # minimal red
+                            
+                        # Build expander for each claim
+                        with st.expander(f"{status_badge}  |  {keyword}"):
+                            st.markdown(f"**Context:** {context}")
+                            st.markdown(f"**Verdict:** <span style='color:{color}; font-weight:600;'>{verdict.upper()}</span>", unsafe_allow_html=True)
+                            st.markdown(f"**Reasoning:** {reasoning}")
+                            
+            except json.JSONDecodeError:
+                st.error("Error reading the final audit report JSON. Ensure it is formatted correctly.")
+    else:
+        st.error(f"Audit report not found at `{report_path}`. Please run Phase 4 first to generate the report.")
 else:
-    st.error(f"Audit report not found at `{report_path}`. Please run Phase 4 first to generate the report.")
+    st.info("Upload a resume and click 'Run Audit Pipeline' to generate a fresh report.")
 
 st.divider()
 # App Header & Description moved to bottom
