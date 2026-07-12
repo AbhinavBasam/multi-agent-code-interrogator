@@ -5,35 +5,35 @@
       "keyword": "Python",
       "context": "Candidate claims expertise in Python based on their resume.",
       "verdict": "Verified",
-      "reasoning": "Code chunks from the candidate's repositories (somehowunsupervised, Rockoders_SEM_image_assessment, ai-job-search) contain explicit syntax or library imports confirming python expertise."
+      "reasoning": "Code chunks from the candidate's repositories (codecrafters-claude-code-python, hello-git, dog-breed-ensemble-cnn) contain explicit syntax or library imports confirming python expertise."
     },
     {
       "id": "claim_2",
-      "keyword": "Machine Learning",
-      "context": "Candidate claims expertise in Machine Learning based on their resume.",
+      "keyword": "TensorFlow",
+      "context": "Candidate claims expertise in TensorFlow based on their resume.",
       "verdict": "Verified",
-      "reasoning": "Code chunks from the candidate's repositories (Rockoders_SEM_image_assessment, ai-job-search) contain explicit syntax or library imports confirming machine learning expertise."
+      "reasoning": "Code chunks from the candidate's repositories (codecrafters-claude-code-python, dog-breed-ensemble-cnn) contain explicit syntax or library imports confirming tensorflow expertise."
     },
     {
       "id": "claim_3",
-      "keyword": "pandas",
-      "context": "Candidate claims expertise in pandas based on their resume.",
+      "keyword": "CNN",
+      "context": "Candidate claims expertise in CNN based on their resume.",
       "verdict": "Verified",
-      "reasoning": "Code chunks from the candidate's repositories (somehowunsupervised) contain explicit syntax or library imports confirming pandas expertise."
+      "reasoning": "Code chunks from the candidate's repositories (codecrafters-claude-code-python, dog-breed-ensemble-cnn) contain explicit syntax or library imports confirming cnn expertise."
     },
     {
       "id": "claim_4",
-      "keyword": "NumPy",
-      "context": "Candidate claims expertise in NumPy based on their resume.",
+      "keyword": "Keras",
+      "context": "Candidate claims expertise in Keras based on their resume.",
       "verdict": "Verified",
-      "reasoning": "Code chunks from the candidate's repositories (somehowunsupervised, Rockoders_SEM_image_assessment) contain explicit syntax or library imports confirming numpy expertise."
+      "reasoning": "Code chunks from the candidate's repositories (dog-breed-ensemble-cnn) contain explicit syntax or library imports confirming keras expertise."
     },
     {
       "id": "claim_5",
-      "keyword": "Docker",
-      "context": "Candidate claims expertise in Docker based on their resume.",
+      "keyword": "Machine Learning",
+      "context": "Candidate claims expertise in Machine Learning based on their resume.",
       "verdict": "Verified",
-      "reasoning": "Code chunks from the candidate's repositories (ai-job-search) contain explicit syntax or library imports confirming docker expertise."
+      "reasoning": "Code chunks from the candidate's repositories (dog-breed-ensemble-cnn) contain explicit syntax or library imports confirming machine learning expertise."
     }
   ]
 }
