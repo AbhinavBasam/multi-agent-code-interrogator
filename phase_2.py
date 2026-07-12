@@ -104,6 +104,17 @@ async def get_github_code_chunks(max_files_per_repo=10):
             
             for path, content in zip(logic_files, file_contents):
                 if content:
+                    if path.endswith(".ipynb"):
+                        try:
+                            nb = json.loads(content)
+                            cells = nb.get("cells", [])
+                            code_lines = []
+                            for cell in cells:
+                                if cell.get("cell_type") == "code":
+                                    code_lines.extend(cell.get("source", []))
+                            content = "".join(code_lines)
+                        except:
+                            pass
                     file_text = f"--- Repository: {repo_name} | File: {path} ---\n{content}\n"
                     all_raw_texts.append((repo_name, file_text))
                     
@@ -127,7 +138,7 @@ async def get_github_code_chunks(max_files_per_repo=10):
         for repo_name, text in all_raw_texts:
             chunks = text_splitter.split_text(text)
             for c in chunks:
-                all_chunks.append({"text": c, "repo": repo_name})
+                all_chunks.append({"text": c, "repo": repo_name, "username": username})
             
         return all_chunks
 

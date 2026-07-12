@@ -189,17 +189,17 @@ if st.session_state.pipeline_completed:
                         reasoning = claim.get("reasoning", "No reasoning provided.")
                         
                         if verdict == "Verified":
-                            status_badge = "VERIFIED"
-                            color = "#4ADE80" # minimal green
+                            label = f":green[**VERIFIED**] | {keyword}"
+                            color = "#4ADE80"
                         elif verdict == "Partial":
-                            status_badge = "PARTIAL"
-                            color = "#FACC15" # minimal yellow
+                            label = f":orange[**PARTIAL**] | {keyword}"
+                            color = "#FACC15"
                         else:
-                            status_badge = "HALLUCINATED"
-                            color = "#F87171" # minimal red
+                            label = f":red[**UNSUBSTANTIATED**] | {keyword}"
+                            color = "#F87171"
                             
                         # Build expander for each claim
-                        with st.expander(f"{status_badge}  |  {keyword}"):
+                        with st.expander(label):
                             st.markdown(f"**Context:** {context}")
                             st.markdown(f"**Verdict:** <span style='color:{color}; font-weight:600;'>{verdict.upper()}</span>", unsafe_allow_html=True)
                             st.markdown(f"**Reasoning:** {reasoning}")

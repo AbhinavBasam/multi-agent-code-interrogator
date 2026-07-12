@@ -49,7 +49,7 @@ async def run_phase_3():
         
         import uuid
         texts = [c["text"] for c in chunks]
-        metadatas = [{"repo": c["repo"]} for c in chunks]
+        metadatas = [{"repo": c["repo"], "username": c.get("username", "Unknown")} for c in chunks]
         chunk_ids = [str(uuid.uuid4()) for _ in chunks]
         
         collection.add(

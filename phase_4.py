@@ -37,25 +37,42 @@ def mock_llm_call(prompt_val):
         "python": [".py", "def ", "import ", "print("],
         "react": ["react", ".jsx", ".tsx", "useeffect", "usestate", "export default function", "npm"],
         "java": [".java", "public class ", "system.out", "public static void"],
-        "sql": [".sql", "select ", "insert into", "create table", "query"],
-        "tensorflow": ["tensorflow", "tf.", "keras", "sequential"],
-        "cnn": ["conv2d", "maxpooling", "keras", "tensorflow"],
-        "convolutional": ["conv2d", "maxpooling", "keras", "tensorflow"],
-        "machine learning": ["sklearn", "model.fit", "predict", "import pandas", "import numpy"]
+        "sql": ["select *", "insert into ", "update ", "import sqlite3", "import psycopg2", "mysql"],
+        "tensorflow": ["tensorflow", "tf.keras", "import keras"],
+        "cnn": ["conv2d", "maxpooling2d", "import tensorflow", "cnn", "neural"],
+        "convolutional": ["conv2d", "maxpooling2d", "import tensorflow", "cnn", "neural"],
+        "machine learning": ["sklearn", "model.fit", "predict", "import pandas", "import numpy", "import torch", "tensorflow", "keras", "cv2"]
     }
     
-    # If we don't have hardcoded indicators, just look for the claim text itself
-    indicators = tech_indicators.get(claim_text, [claim_text])
+    # Find all indicators relevant to the claim sentence
+    indicators = []
+    for tech, inds in tech_indicators.items():
+        if re.search(r'\b' + re.escape(tech) + r'\b', claim_text):
+            indicators.extend(inds)
+            
+    # If we don't have hardcoded indicators, try to extract the keyword from the sentence
+    if not indicators:
+        kw_match = re.search(r"expertise in (.*?) based on", claim_text)
+        if kw_match:
+            indicators = [kw_match.group(1).strip()]
+        else:
+            indicators = [claim_text]
     
     # Check if ANY of the indicators exist in the code evidence
     found = any(ind in code_evidence_lower for ind in indicators)
     
+    # Extract the core skill keyword for cleaner printing
+    skill_keyword = claim_text
+    kw_match = re.search(r"expertise in (.*?) based on", claim_text)
+    if kw_match:
+        skill_keyword = kw_match.group(1).strip()
+    
     if found:
         verdict = "Verified"
-        reasoning = f"Code chunks from the candidate's {repo_context} contain explicit syntax or library imports confirming {claim_text} expertise."
+        reasoning = f"Code chunks from the candidate's {repo_context} contain explicit syntax or library imports confirming {skill_keyword} expertise."
     else:
-        verdict = "Hallucinated"
-        reasoning = f"After scanning the candidate's {repo_context}, no evidence, syntax, or library usage for '{claim_text}' was found in the codebase."
+        verdict = "Unsubstantiated"
+        reasoning = f"After scanning the candidate's {repo_context}, no evidence, syntax, or library usage for '{skill_keyword}' was found in the codebase."
         
     response = {
         "verdict": verdict,
@@ -127,14 +144,29 @@ Evaluate if the code supports the claim. You must respond in a structured JSON f
         claim_context = claim["context"]
         print(f"Analyzing claim: {claim['keyword']}...")
         
-        # Retrieve top 10 chunks (chunks are now larger)
+        username = "encode" # fallback
+        if os.path.exists("github_config.json"):
+            with open("github_config.json", "r") as f:
+                data = json.load(f)
+                username = data.get("github_username", "encode")
+                
+        # Retrieve top 10 chunks (filtered ONLY to this candidate's repositories)
         results = collection.query(
             query_texts=[claim_context],
-            n_results=10
+            n_results=10,
+            where={"username": username}
         )
         
         docs = results.get("documents", [[]])[0]
-        code_evidence = "\n\n---\n\n".join(docs)
+        metadatas = results.get("metadatas", [[]])[0]
+        
+        enriched_docs = []
+        for doc, meta in zip(docs, metadatas):
+            repo_name = meta.get("repo", "Unknown") if meta else "Unknown"
+            # Ensure every chunk explicitly declares its repository for the AI
+            enriched_docs.append(f"--- Repository: {repo_name} |\n{doc}")
+            
+        code_evidence = "\n\n---\n\n".join(enriched_docs)
         
         # Invoke the chain
         try:

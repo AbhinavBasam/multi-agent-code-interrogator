@@ -5,35 +5,35 @@
       "keyword": "Python",
       "context": "Candidate claims expertise in Python based on their resume.",
       "verdict": "Verified",
-      "reasoning": "The retrieved code chunks explicitly demonstrate the expertise related to the claim."
+      "reasoning": "Code chunks from the candidate's repositories (somehowunsupervised, Rockoders_SEM_image_assessment, ai-job-search) contain explicit syntax or library imports confirming python expertise."
     },
     {
       "id": "claim_2",
       "keyword": "Machine Learning",
       "context": "Candidate claims expertise in Machine Learning based on their resume.",
       "verdict": "Verified",
-      "reasoning": "Code chunks from the candidate's repository confirm implementation of Convolutional Neural Networks and image classification."
+      "reasoning": "Code chunks from the candidate's repositories (Rockoders_SEM_image_assessment, ai-job-search) contain explicit syntax or library imports confirming machine learning expertise."
     },
     {
       "id": "claim_3",
-      "keyword": "scikit-learn",
-      "context": "Candidate claims expertise in scikit-learn based on their resume.",
+      "keyword": "pandas",
+      "context": "Candidate claims expertise in pandas based on their resume.",
       "verdict": "Verified",
-      "reasoning": "Code chunks from the candidate's repository confirm implementation of Convolutional Neural Networks and image classification."
+      "reasoning": "Code chunks from the candidate's repositories (somehowunsupervised) contain explicit syntax or library imports confirming pandas expertise."
     },
     {
       "id": "claim_4",
-      "keyword": "CNN",
-      "context": "Candidate claims expertise in CNN based on their resume.",
-      "verdict": "Verified",
-      "reasoning": "Code chunks from the candidate's repository confirm implementation of Convolutional Neural Networks and image classification."
-    },
-    {
-      "id": "claim_5",
       "keyword": "NumPy",
       "context": "Candidate claims expertise in NumPy based on their resume.",
       "verdict": "Verified",
-      "reasoning": "Code chunks from the candidate's repository confirm implementation of Convolutional Neural Networks and image classification."
+      "reasoning": "Code chunks from the candidate's repositories (somehowunsupervised, Rockoders_SEM_image_assessment) contain explicit syntax or library imports confirming numpy expertise."
+    },
+    {
+      "id": "claim_5",
+      "keyword": "Docker",
+      "context": "Candidate claims expertise in Docker based on their resume.",
+      "verdict": "Verified",
+      "reasoning": "Code chunks from the candidate's repositories (ai-job-search) contain explicit syntax or library imports confirming docker expertise."
     }
   ]
 }
