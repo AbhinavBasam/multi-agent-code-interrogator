@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+venv/
+env/
+.venv/
+ENV/
+
+# Database & Vector DB storage
+chroma_db/
+*.sqlite3
+
+# Temporary & Local Configuration / Credentials / Caches
+github_config.json
+candidate_info.json
+claims_payload.json
+final_audit_report.json
+repo_cache.json
+scratch/
+.env
+*.env
+*.log
+*.tmp
+
+# Office temporary lock files
+~$*.docx
+~$*.xlsx
+~$*.pptx
+
+# OS generated files
+.DS_Store
+Thumbs.db
