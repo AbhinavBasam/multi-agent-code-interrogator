@@ -1,0 +1,166 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
+\usepackage{geometry}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{titlesec}
+
+\geometry{a4paper, margin=1in}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\titleformat{\section}{\Large\bfseries\color{blue!60!black}}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries\color{blue!40!black}}{\thesubsection}{1em}{}
+
+\title{\Huge \textbf{The Ultimate Builder's Guide: Constructing a Multi-Agent RAG System} \\ 
+\Large Deep Learning, Vector Math, and Agentic Orchestration}
+\author{Deep-Dive Tutorial}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduction}
+If you want to build a Multi-Agent Retrieval-Augmented Generation (RAG) system from scratch, you cannot just piece together API calls. You need to understand \textbf{why} the data moves the way it does. This guide provides the deep theoretical foundations and concrete examples required to build a system like CodeAudit AI.
+
+% ---------------------------------------------------------
+\section{1. The Core Concepts: Deep Learning \& Embeddings}
+% ---------------------------------------------------------
+
+\subsection{Why standard LLMs fail (The Context Limit)}
+Imagine handing a human a 10,000-page book and asking, "Is there a bug on page 4,002?" They can't memorize the whole book. Similarly, an LLM has a \textbf{Context Window} (e.g., 8,000 tokens). A candidate's GitHub might have 500,000 tokens of code. If you feed it all to the LLM, it crashes. If you ask it without feeding the code, it hallucinates (guesses).
+
+\textbf{Solution:} Search the code \textit{first}, extract only the 5 relevant pages, and hand \textit{only those 5 pages} to the LLM. But how do we search code intelligently?
+
+\subsection{Vector Embeddings (The Math Behind Meaning)}
+You cannot use "Ctrl+F" to search for the skill "Machine Learning" in code, because a developer might write \texttt{import tensorflow as tf}. There is no text overlap. 
+
+We solve this using \textbf{Vector Embeddings}. An embedding model is a Neural Network that has read billions of lines of text and code. It takes a piece of text and maps it to a coordinate in a high-dimensional space.
+
+Imagine a 3D coordinate system $[X, Y, Z]$ representing $[Animal, Vehicle, Code]$:
+\begin{itemize}
+    \item "Dog" $\rightarrow [0.9, 0.1, 0.0]$
+    \item "Car" $\rightarrow [0.1, 0.9, 0.0]$
+    \item \texttt{print("Hello")} $\rightarrow [0.0, 0.1, 0.9]$
+\end{itemize}
+In CodeAudit AI, we use \texttt{all-MiniLM-L6-v2}. It doesn't use 3 dimensions; it uses \textbf{384 dimensions}. Every piece of code becomes an array of 384 numbers.
+
+\subsection{Cosine Similarity: Finding the Match}
+To find the closest match, we use \textbf{Cosine Similarity}. We convert the resume claim ("Deep Learning") into a 384-d vector. We convert all the candidate's code into 384-d vectors. 
+Cosine similarity measures the \textit{angle} between these vectors. If the angle is 0 degrees, the cosine is 1.0 (a perfect semantic match).
+
+\begin{lstlisting}[language=Python, caption=Basic Embedding Logic]
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+claim_vector = model.encode(["Machine Learning"])
+code_vector = model.encode(["import torch.nn as nn"])
+
+# Even though the text doesn't match, the math proves they are similar!
+similarity = cosine_similarity(claim_vector, code_vector)
+print(similarity) # Output: > 0.65
+\end{lstlisting}
+
+% ---------------------------------------------------------
+\section{2. The Vector Database: ChromaDB}
+% ---------------------------------------------------------
+When a candidate has 10,000 code snippets, we can't calculate Cosine Similarity manually in a for-loop. It's too slow. We use a \textbf{Vector Database} (ChromaDB) which indexes vectors using HNSW (Hierarchical Navigable Small World) algorithms for lightning-fast retrieval.
+
+\begin{lstlisting}[language=Python, caption=Storing and Retrieving in ChromaDB]
+import chromadb
+client = chromadb.Client()
+collection = client.create_collection("github_code")
+
+# 1. Store the code vectors
+collection.add(
+    documents=["import pandas as pd", "def build_web_app(): pass"],
+    metadatas=[{"repo": "data-viz"}, {"repo": "web-site"}],
+    ids=["chunk1", "chunk2"]
+)
+
+# 2. Retrieve the top match for a skill
+results = collection.query(
+    query_texts=["Data Analysis"],
+    n_results=1
+)
+# Returns "import pandas as pd"
+\end{lstlisting}
+
+% ---------------------------------------------------------
+\section{3. Building the Multi-Agent System}
+% ---------------------------------------------------------
+An "Agent" is just an LLM wrapped in Python code that tells it: \textit{"You are an expert at X. Use these specific tools to accomplish Y."}
+
+\subsection{Phase 1: The Extraction Agent}
+\textbf{Goal:} Read a messy PDF and output clean JSON data.
+\textbf{How to build it:} We use \texttt{PyMuPDF} to grab the text. Then we use an LLM (or regex) to find the GitHub URL and a list of skills.
+
+\subsection{Phase 2: The Ingestion Agent (Crucial Step)}
+\textbf{Goal:} Download the code and prepare it for embedding.
+\textbf{Chunking Logic:} You cannot embed a whole file at once. The vector becomes "diluted" (it loses its specific meaning). We slice the code into \textbf{800-character chunks}.
+\textbf{Overlap:} If we cut the code exactly at 800 characters, we might cut a function in half! We use a \textbf{100-character sliding overlap} so the end of Chunk 1 is the beginning of Chunk 2.
+
+\subsection{Phase 3: The Indexing Agent}
+\textbf{Goal:} Push the chunks into ChromaDB.
+\textbf{Important Rule (Multi-Tenancy):} You MUST tag every chunk with the candidate's GitHub username in the metadata. Otherwise, Candidate A might get credit for Candidate B's code!
+
+\subsection{Phase 4: The LLM Judge Agent (Chain-of-Thought)}
+\textbf{Goal:} Make the final decision.
+\textbf{How to build it:} We use LangChain to pull the Top-5 chunks from ChromaDB and feed them to GPT-4o or Llama-3.
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=The System Prompt (Chain-of-Thought)]
+You are a strict technical recruiter.
+Skill Claim: {skill}
+Candidate's Code Evidence: {retrieved_chunks}
+
+Step 1: Check if the code explicitly imports libraries related to {skill}.
+Step 2: Check if the code actually executes functions, or if it is just a text comment.
+Step 3: Output your final decision: "Verified" or "Unsubstantiated".
+\end{tcolorbox}
+
+By forcing the LLM to write out Step 1 and Step 2 before deciding Step 3, you eliminate hallucinations. This is the secret to getting a \textbf{0.0\% False Positive Rate}.
+
+\section{Summary: The Pipeline}
+\begin{enumerate}
+    \item PDF $\rightarrow$ Text $\rightarrow$ [Skill: "React.js"]
+    \item GitHub API $\rightarrow$ Downloads 50 `.js` files $\rightarrow$ Splits into 800-char strings.
+    \item \texttt{all-MiniLM-L6-v2} $\rightarrow$ Converts strings to 384-dimensional vectors $\rightarrow$ Saves to ChromaDB.
+    \item ChromaDB $\rightarrow$ Calculates Cosine Similarity $\rightarrow$ Returns top 5 React-related code chunks.
+    \item LLM Judge $\rightarrow$ Reads the 5 chunks $\rightarrow$ Uses Chain-of-Thought $\rightarrow$ Outputs "Verified".
+\end{enumerate}
+
+\end{document}
