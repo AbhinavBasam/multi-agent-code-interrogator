@@ -33,3 +33,7 @@ scratch/
 # OS generated files
 .DS_Store
 Thumbs.db
+paper/
+notes/
+resume.pdf
+benchmark_report_v3.json
